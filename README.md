@@ -1,5 +1,3 @@
-# order_form
-
 ## Project setup
 ```
 yarn install

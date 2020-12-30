@@ -4,6 +4,7 @@
       <v-row>
         <v-col cols="12" sm="6">
           <v-text-field
+            ref="taskName"
             v-model="taskName"
             :counter="maxTaskName"
             :rules="[rules.required]"
@@ -11,7 +12,7 @@
           ></v-text-field>
         </v-col>
         <v-col>
-          <v-btn class="mx-2" fab dark color="indigo">
+          <v-btn class="mx-2" fab dark color="indigo" @click="submit">
             <v-icon dark> mdi-plus </v-icon>
           </v-btn>
         </v-col>
@@ -28,49 +29,75 @@
 </template>
 
 <script>
+import axios from "axios"
+
 export default {
   data() {
     return {
       items: [],
-      taskNasme: null,
+      taskName: null,
       maxTaskName: 40,
       rules: {
-        required: value => !!value || 'Required.',
-      }
+        required: (value) => !!value || "Required.",
+      },
+      formHasErrors: false,
     };
   },
   created() {
     this.getTaskList();
   },
   computed: {
-    form () {
+    form() {
       return {
-        taskName: this.taskNasme
-      }
-    }
+        taskName: this.taskName,
+      };
+    },
   },
   methods: {
     getTaskList() {
-      this.items = [
-        {
-          task_name: "sampleTaskName1",
-          status: true,
-        },
-        {
-          task_name: "sampleTaskName2",
-          status: false,
-        },
-      ];
+      axios.defaults.baseURL = process.env.VUE_APP_API_ENDPOINT
+      console.log("GET /api");
+      axios.get("/api").then(function(res){
+        console.log(res.data);
+        this.items = res.data;
+      }.bind(this)).catch(function(error){
+        console.log(error);
+      })
     },
-    submit () {
-        this.formHasErrors = false
+    submit() {
+      // フォーマットチェック処理
+      this.formHasErrors = false;
 
-        Object.keys(this.form).forEach(f => {
-          if (!this.form[f]) this.formHasErrors = true
+      Object.keys(this.form).forEach((f) => {
+        if (!this.form[f]) this.formHasErrors = true;
 
-          this.$refs[f].validate(true)
-        })
-      },
+        this.$refs[f].validate(true);
+      });
+      if (this.formHasErrors) {
+        console.log("フォーマットエラー");
+        return;
+      }
+      // 追加処理
+      console.log("タスク追加処理");
+      let params = {
+        "id": null,
+        "task_name": this.taskName,
+        "is_check": false
+      }
+      console.log("POST /api" + params);
+       axios.post("/api", params).then(function(res){
+        console.log(res);
+          if (res.status == 200) {
+            this.initData();
+            this.getTaskList();
+         }
+      }.bind(this)).catch(function(error){
+        console.log(error);
+      })
+    },
+    initData() {
+      this.taskName = "";
+    }
   },
 };
 </script>
