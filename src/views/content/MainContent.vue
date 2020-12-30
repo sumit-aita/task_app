@@ -19,7 +19,7 @@
       </v-row>
       <v-row v-for="(item, index) in items" :key="index">
         <v-checkbox
-          v-model="item.status"
+          v-model="item.is_check"
           hide-details
           :label="item.task_name"
         ></v-checkbox>
@@ -82,7 +82,7 @@ export default {
       let params = {
         "id": null,
         "task_name": this.taskName,
-        "is_check": false
+        "is_check": 0 //false
       }
       console.log("POST /api" + params);
        axios.post("/api", params).then(function(res){
