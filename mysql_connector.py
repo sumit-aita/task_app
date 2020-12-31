@@ -6,7 +6,7 @@ def start_connection():
     # コネクションの作成
     conn = mydb.connect(
         host='127.0.0.1',
-        port='3306',
+        port='',
         user='',
         password='',
         database=''
@@ -14,7 +14,6 @@ def start_connection():
     return conn
 
 def create_table(conn,table_name):
-    print(1)
     # DB操作用にカーソルを作成
     cur = conn.cursor()
 
@@ -36,7 +35,6 @@ def select(cur):
     data = []
     cur.execute("SELECT * FROM task_table")
     rows = cur.fetchall()
-    print(rows)
     for i,t,c in rows:
         q = {"id":None,"task_name":None,"is_check":None}
         q["id"] = i
@@ -52,9 +50,7 @@ def insert(con,cur,value):
     if max_id == None:
         max_id = 0
     
-    #cur.execute("INSERT INTO taskDB.task_table VALUES  (%(id)s, %(task_name)s, %(is_check)s)",{"id":max_id + 1,"task_name":value[1],"is_check":value[2]})
     cur.execute(f"INSERT INTO taskDB.task_table (id, task_name, is_check) VALUES ('{max_id+1}', '{value[1]}', '{value[2]}')")
-    #print(f'INSERT INTO taskDB.task_table (id, task_name, is_check) VALUES ({max_id+1}, "{value[1]}", {value[2]})')
     con.commit()
 def delete(cur,id):
     cur.execute(f'DELETE FROM test_table WHERE id = {id}')

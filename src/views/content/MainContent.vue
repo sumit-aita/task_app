@@ -1,9 +1,11 @@
 <template>
   <div>
     <v-container pading-top ma-4>
+      <!-- タスク追加 -->
       <v-row>
         <v-col cols="12" sm="6">
           <v-text-field
+            v-if="resetFlag"
             ref="taskName"
             v-model="taskName"
             :counter="maxTaskName"
@@ -12,11 +14,19 @@
           ></v-text-field>
         </v-col>
         <v-col>
-          <v-btn class="mx-2" fab dark color="indigo" @click="submit">
+          <v-btn
+            class="mx-2"
+            fab
+            dark
+            color="indigo"
+            :disabled="isProcessed"
+            @click="submit"
+          >
             <v-icon dark> mdi-plus </v-icon>
           </v-btn>
         </v-col>
       </v-row>
+      <!-- タスク一覧 -->
       <v-row v-for="(item, index) in items" :key="index">
         <v-checkbox
           v-model="item.is_check"
@@ -24,23 +34,30 @@
           :label="item.task_name"
         ></v-checkbox>
       </v-row>
+      <v-row v-if="isNoResult" ma-4>
+        <span>タスクが登録されていません。</span>
+      </v-row>
     </v-container>
   </div>
 </template>
 
 <script>
-import axios from "axios"
+import axios from "axios";
 
 export default {
+  components: {},
   data() {
     return {
-      items: [],
-      taskName: null,
+      items: [], //タスク一覧情報
+      taskName: null, //タスク名
       maxTaskName: 40,
       rules: {
         required: (value) => !!value || "Required.",
       },
-      formHasErrors: false,
+      formHasErrors: false, //フォーマットエラーフラグ
+      isProcessed: false, //処理中フラグ
+      isNoResult: false, //タスク未登録フラグ
+      resetFlag: true,
     };
   },
   created() {
@@ -55,14 +72,31 @@ export default {
   },
   methods: {
     getTaskList() {
-      axios.defaults.baseURL = process.env.VUE_APP_API_ENDPOINT
+      this.isProcessed = true;
+      axios.defaults.baseURL = process.env.VUE_APP_API_ENDPOINT;
       console.log("GET /api");
-      axios.get("/api").then(function(res){
-        console.log(res.data);
-        this.items = res.data;
-      }.bind(this)).catch(function(error){
-        console.log(error);
-      })
+      axios
+        .get("/api")
+        .then(
+          function (res) {
+            console.log(res.data);
+            if (res.status == 200) {
+              if (res.data.length != 0) {
+                this.items = res.data;
+                this.isNoResult = false;
+              } else {
+                // タスク未登録の場合
+                this.isNoResult = true;
+              }
+            }
+          }.bind(this)
+        )
+        .catch(function (error) {
+          window.alert(error);
+          console.log(error);
+        });
+
+      this.isProcessed = false;
     },
     submit() {
       // フォーマットチェック処理
@@ -77,27 +111,38 @@ export default {
         console.log("フォーマットエラー");
         return;
       }
+      this.isProcessed = false; //追加ボタン非活性
       // 追加処理
       console.log("タスク追加処理");
       let params = {
-        "id": null,
-        "task_name": this.taskName,
-        "is_check": 0 //false
-      }
+        id: null,
+        task_name: this.taskName,
+        is_check: 0, //false
+      };
       console.log("POST /api" + params);
-       axios.post("/api", params).then(function(res){
-        console.log(res);
-          if (res.status == 200) {
-            this.initData();
-            this.getTaskList();
-         }
-      }.bind(this)).catch(function(error){
-        console.log(error);
-      })
+      axios
+        .post("/api", params)
+        .then(
+          function (res) {
+            console.log(res);
+            if (res.status == 200) {
+              this.initData();
+              this.getTaskList();
+            }
+          }.bind(this)
+        )
+        .catch(function (error) {
+          window.alert(error);
+          console.log(error);
+        });
+      this.isProcessed = false;
     },
     initData() {
       this.taskName = "";
-    }
+      // 再描画
+      this.resetFlag = false;
+      this.$nextTick(() => (this.resetFlag = true));
+    },
   },
 };
 </script>

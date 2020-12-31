@@ -1,6 +1,6 @@
 <template>
   <v-app-bar dark app elevation="10">
-    <v-menu offset-y>
+    <v-menu v-if="false" offset-y>
       <template v-slot:activator="{ on, attrs }">
         <v-app-bar-nav-icon
           dark

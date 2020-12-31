@@ -24,7 +24,6 @@ class test(Resource):
         return sql.select(cur)
     def post(self):
         args = parser.parse_args()
-        print(args)
         sql.insert(conn,cur,list(args.values()))
 api.add_resource(test, "/api")
 
