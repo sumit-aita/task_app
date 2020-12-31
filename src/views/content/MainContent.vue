@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-container pading-top ma-4>
-      <!-- タスク追加 -->
+      <!-- タスク追加テキストボックス -->
       <v-row>
         <v-col cols="12" sm="6">
           <v-text-field
@@ -14,6 +14,7 @@
           />
         </v-col>
         <v-col>
+          <!-- 追加ボタン -->
           <v-btn
             class="mx-2"
             fab
@@ -57,7 +58,7 @@ export default {
       formHasErrors: false, //フォーマットエラーフラグ
       isProcessed: false, //処理中フラグ
       isNoResult: false, //タスク未登録フラグ
-      resetFlag: true,
+      resetFlag: true, //テキストボックス再描画用
     };
   },
   created() {
@@ -71,6 +72,9 @@ export default {
     },
   },
   methods: {
+    /*
+    * タスク一覧情報取得処理
+    */
     async getTaskList() {
       // ローディング画面表示
       this.$store.commit("setLoading", true);
@@ -103,10 +107,12 @@ export default {
       this.isProcessed = false;
       this.$store.commit("setLoading", false);
     },
+    /*
+    * タスク追加処理
+    */
     async submit() {
       // フォーマットチェック処理
       this.formHasErrors = false;
-
       Object.keys(this.form).forEach((f) => {
         if (!this.form[f]) this.formHasErrors = true;
 
@@ -117,8 +123,9 @@ export default {
         return;
       }
 
+      // ローディング画面表示
       this.$store.commit("setLoading", true);
-      this.isProcessed = false; //追加ボタン非活性
+      this.isProcessed = false;
       // 追加処理
       console.log("タスク追加処理");
       let params = {
@@ -143,9 +150,13 @@ export default {
           console.log(error);
         });
 
+      // ローディング画面非表示
       this.$store.commit("setLoading", false);
       this.isProcessed = false;
     },
+    /*
+    * テキストボックス初期化処理
+    */
     initData() {
       this.taskName = "";
       // 再描画
