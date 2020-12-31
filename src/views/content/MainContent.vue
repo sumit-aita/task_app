@@ -11,7 +11,7 @@
             :counter="maxTaskName"
             :rules="[rules.required]"
             label="Task name"
-          ></v-text-field>
+          />
         </v-col>
         <v-col>
           <v-btn
@@ -32,7 +32,7 @@
           v-model="item.is_check"
           hide-details
           :label="item.task_name"
-        ></v-checkbox>
+        />
       </v-row>
       <v-row v-if="isNoResult" ma-4>
         <span>タスクが登録されていません。</span>
@@ -71,11 +71,14 @@ export default {
     },
   },
   methods: {
-    getTaskList() {
+    async getTaskList() {
+      // ローディング画面表示
+      this.$store.commit("setLoading", true);
       this.isProcessed = true;
+
       axios.defaults.baseURL = process.env.VUE_APP_API_ENDPOINT;
       console.log("GET /api");
-      axios
+      await axios
         .get("/api")
         .then(
           function (res) {
@@ -96,9 +99,11 @@ export default {
           console.log(error);
         });
 
+      // ローディング画面非表示
       this.isProcessed = false;
+      this.$store.commit("setLoading", false);
     },
-    submit() {
+    async submit() {
       // フォーマットチェック処理
       this.formHasErrors = false;
 
@@ -111,6 +116,8 @@ export default {
         console.log("フォーマットエラー");
         return;
       }
+
+      this.$store.commit("setLoading", true);
       this.isProcessed = false; //追加ボタン非活性
       // 追加処理
       console.log("タスク追加処理");
@@ -120,7 +127,7 @@ export default {
         is_check: 0, //false
       };
       console.log("POST /api" + params);
-      axios
+      await axios
         .post("/api", params)
         .then(
           function (res) {
@@ -135,6 +142,8 @@ export default {
           window.alert(error);
           console.log(error);
         });
+
+      this.$store.commit("setLoading", false);
       this.isProcessed = false;
     },
     initData() {
